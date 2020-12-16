@@ -1,17 +1,16 @@
-﻿using NetPro.Core.Infrastructure;
+﻿using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NetPro.Web.Core.Infrastructure.Extensions;
-using NetPro.Core.Configuration;
-using NetPro.Web.Core.Middlewares;
 using NetPro.Checker;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using NetPro.Core.Configuration;
+using NetPro.Core.Infrastructure;
 using NetPro.RedisManager;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using NetPro.TypeFinder;
-using HealthChecks.UI.Client;
+using NetPro.Web.Core.Infrastructure.Extensions;
+using System.Collections.Generic;
 
 namespace NetPro.Web.Core.Infrastructure
 {
@@ -29,7 +28,7 @@ namespace NetPro.Web.Core.Infrastructure
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration, ITypeFinder typeFinder)
         {
             var serviceProvider = services.BuildServiceProvider();
-            var redisCacheOption = serviceProvider.GetService<RedisCacheOption>();
+            //var redisCacheOption = serviceProvider.GetService<RedisCacheOption>();
             var netproOption = serviceProvider.GetService<NetProOption>();
 
             //配置 ef性能监控
@@ -39,18 +38,18 @@ namespace NetPro.Web.Core.Infrastructure
 
 
             //健康检查
-            if (!netproOption.EnabledHealthCheck)
+            if (!netproOption?.EnabledHealthCheck??true)
                 return;
 
             var healthbuild = services.AddHealthChecks();
             //if (!string.IsNullOrWhiteSpace(mongoDbOptions?.ConnectionString))
             //    healthbuild.AddMongoDb(mongoDbOptions.ConnectionString, tags: new string[] { "mongodb" });
-            foreach (var item in redisCacheOption?.Endpoints ?? new List<ServerEndPoint>())
-            {
-                healthbuild.AddRedis($"{item.Host}:{item.Port},password={redisCacheOption.Password}", name: $"redis-{item.Host}:{item.Port}");
-            }
+            //foreach (var item in redisCacheOption?.Endpoints ?? new List<ServerEndPoint>())
+            //{
+            //    healthbuild.AddRedis($"{item.Host}:{item.Port},password={redisCacheOption.Password}", name: $"redis-{item.Host}:{item.Port}");
+            //}
 
-            services.AddHealthChecksUI();
+            //services.AddHealthChecksUI();
         }
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace NetPro.Web.Core.Infrastructure
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
 
-            application.UseHealthChecksUI(s => s.UIPath = "/ui");
+            //application.UseHealthChecksUI(s => s.UIPath = "/ui");
 
             application.UseCheck();
         }
